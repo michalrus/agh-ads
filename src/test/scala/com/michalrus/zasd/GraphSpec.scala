@@ -3,9 +3,33 @@ package com.michalrus.zasd
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen
 
+final class GraphGens[Vertex, EdgeWeight](vertexG: Int ⇒ Gen[Vertex], // Int holds an approximate of the `graph` size
+                                          weightG: Gen[EdgeWeight]) {
+
+  val vertices: Gen[Set[Vertex]] =
+    Gen.sized(sz ⇒ for {
+      realCount ← Gen.choose(0, sz)
+      set ← Gen.containerOfN[Set, Vertex](realCount, vertexG(sz))
+    } yield set)
+
+  val edges: Gen[Map[(Vertex, Vertex), EdgeWeight]] =
+    for {
+      vs ← vertices
+      es ← Gen.mapOf[(Vertex, Vertex), EdgeWeight](for {
+        v ← Gen.oneOf(vs.toSeq)
+        w ← Gen.oneOf(vs.toSeq)
+        weight ← weightG
+      } yield ((v, w), weight))
+    } yield es
+
+}
+
 abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight],
                                              vertexG: Int ⇒ Gen[Vertex], // Int holds an approximate of the `graph` size
                                              weightG: Gen[EdgeWeight]) extends UnitSpec {
+
+  val graphGens = new GraphGens(vertexG, weightG)
+  import graphGens._
 
   "A graph" when {
 
@@ -23,22 +47,6 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
     }
 
     "non-empty" should {
-
-      val vertices: Gen[Set[Vertex]] =
-        Gen.sized(sz ⇒ for {
-          realCount ← Gen.choose(0, sz)
-          set ← Gen.containerOfN[Set, Vertex](realCount, vertexG(sz))
-        } yield set)
-
-      val edges: Gen[Map[(Vertex, Vertex), EdgeWeight]] =
-        for {
-          vs ← vertices
-          es ← Gen.mapOf[(Vertex, Vertex), EdgeWeight](for {
-            v ← Gen.oneOf(vs.toSeq)
-            w ← Gen.oneOf(vs.toSeq)
-            weight ← weightG
-          } yield ((v, w), weight))
-        } yield es
 
       "report correct vertex count after adding some vertices" in check {
         forAll(vertices) { vs ⇒
