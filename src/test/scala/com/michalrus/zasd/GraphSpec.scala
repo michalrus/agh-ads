@@ -1,45 +1,49 @@
 package com.michalrus.zasd
 
-import org.scalacheck.Prop.{forAll, BooleanOperators}
+import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen
 
-abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight]) extends UnitSpec {
+abstract class GraphSpec[Vertex, EdgeWeight](graph: => Graph[Vertex, EdgeWeight],
+                                             vertexG: Int => Gen[Vertex], // Int holds an approximate of the `graph` size
+                                             weightG: Gen[EdgeWeight]) extends UnitSpec {
 
   "A graph" when {
 
     "empty" should {
-      "ignore removal of a non-existent vertex" in check { (v: Int) => gen.removeVertex(v); true}
-      "ignore removal of a non-existent edge" in check { (v: Int, w: Int) => gen.removeEdge(v, w); true}
-      "return no neighbors" in check { (i: Int) => gen.neighbors(i).isEmpty}
-      "return no edges into" in check { (i: Int) => gen.edgesInto(i).isEmpty}
-      "return no edges out of" in check { (i: Int) => gen.edgesOutOf(i).isEmpty}
-      "contain no vertices" in check { (i: Int) => !gen.contains(i)}
-      "contain no edges" in check { (v: Int, w: Int) => !gen.findEdge(v, w).isDefined}
-      "report zero vertex count" in { gen.vertexCount shouldBe 0 }
-      "report zero edge count" in { gen.edgeCount shouldBe 0 }
-      "have no adjacent vertices" in check { (v: Int, w: Int) => !gen.areAdjacent(v, w)}
+      implicit val arbVertex = org.scalacheck.Arbitrary(vertexG(1000))
+
+      "ignore removal of a non-existent vertex" in check { (v: Vertex) => graph.removeVertex(v); true}
+      "ignore removal of a non-existent edge" in check { (v: Vertex, w: Vertex) => graph.removeEdge(v, w); true}
+      "return no neighbors" in check { (v: Vertex) => graph.neighbors(v).isEmpty}
+      "return no edges into" in check { (v: Vertex) => graph.edgesInto(v).isEmpty}
+      "return no edges out of" in check { (v: Vertex) => graph.edgesOutOf(v).isEmpty}
+      "contain no vertices" in check { (v: Vertex) => !graph.contains(v)}
+      "contain no edges" in check { (v: Vertex, w: Vertex) => !graph.findEdge(v, w).isDefined}
+      "report zero vertex count" in { graph.vertexCount shouldBe 0 }
+      "report zero edge count" in { graph.edgeCount shouldBe 0 }
+      "have no adjacent vertices" in check { (v: Vertex, w: Vertex) => !graph.areAdjacent(v, w)}
     }
 
     "non-empty" should {
 
-      def vertices: Gen[Set[Int]] =
+      def vertices: Gen[Set[Vertex]] =
         Gen.sized(sz => for {
-          count <- Gen.choose(0, sz)
-          set <- Gen.containerOfN[Set, Int](count, Gen.choose(0, sz))
+          realCount <- Gen.choose(0, sz)
+          set <- Gen.containerOfN[Set, Vertex](realCount, vertexG(sz))
         } yield set)
 
-      def edges: Gen[Map[(Int, Int), Weight]] =
+      def edges: Gen[Map[(Vertex, Vertex), EdgeWeight]] =
         for {
           vs <- vertices
-          es <- Gen.mapOf[(Int, Int), Weight](for {
+          es <- Gen.mapOf[(Vertex, Vertex), EdgeWeight](for {
             v <- Gen.oneOf(vs.toSeq)
             w <- Gen.oneOf(vs.toSeq)
-            weight <- weights } yield ((v, w), weight))
+            weight <- weightG} yield ((v, w), weight))
         } yield es
 
       "report correct vertex count after adding some vertices" in check {
         forAll(vertices) { vs =>
-          val g = gen
+          val g = graph
           vs foreach g.addVertex
           g.vertexCount === vs.size
         }
@@ -52,7 +56,7 @@ abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight
         } yield (add, rem)
 
         forAll(addRem(1000)) { case (add, rem) =>
-          val g = gen
+          val g = graph
           add foreach g.addVertex
           rem foreach g.removeVertex
           g.vertexCount === (add.size - rem.size)
@@ -61,7 +65,7 @@ abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight
 
       "report zero edge count when no edges added" in check {
         forAll(vertices) { vs =>
-          val g = gen
+          val g = graph
           vs foreach g.addVertex
           g.edgeCount === 0
         }
@@ -69,17 +73,17 @@ abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight
 
       "autocreate non-existent vertices of newly added edges" in check {
         forAll(edges) { edges =>
-          val g = gen
-          edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight) }
-          val addedVs = edges.keySet flatMap { case (v, w) => Set(v, w) }
+          val g = graph
+          edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight)}
+          val addedVs = edges.keySet flatMap { case (v, w) => Set(v, w)}
           g.vertexCount === addedVs.size
         }
       }
 
       "report correct edge count after adding some edges" in check {
         forAll(edges) { edges =>
-          val g = gen
-          edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight) }
+          val g = graph
+          edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight)}
           g.edgeCount === edges.size
         }
       }
