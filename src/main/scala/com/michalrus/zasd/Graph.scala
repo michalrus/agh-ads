@@ -12,8 +12,11 @@ trait Graph[Vertex, EdgeWeight] {
 
   def removeEdge(v: Vertex, w: Vertex)
 
-  // Redundant…
-  def neighbors(v: Vertex): Set[Vertex] = (edgesInto(v) ++ edgesOutOf(v)) map (_.v)
+  // „V. Podaj węzły sąsiednie do węzła”
+  // redundant, not implemented;
+  //
+  //     final def neighbors(v: Vertex) = edgesInto(v) ++ edgesOutOf(v)
+  //
 
   def edgesInto(v: Vertex): Set[HalfEdge]
 
@@ -24,13 +27,18 @@ trait Graph[Vertex, EdgeWeight] {
   def findEdge(v: Vertex, w: Vertex): Option[EdgeWeight]
 
   // „IX. Podaj końce krawędzi”
-  // wtf?!
+  // redundant, not implemented;
+  //
+  //     final def verticesOfEdge(v: Vertex, w: Vertex) = (v, w)
+  //
 
   def vertexCount: Int
 
   def edgeCount: Int
 
-  // Redundant…
-  final def areAdjacent(v: Vertex, w: Vertex): Boolean = findEdge(v, w).isDefined
-
+  // „XII. Czy węzły są sąsiednie”
+  // redundant, not implemented;
+  //
+  //     final def areAdjacent(v: Vertex, w: Vertex) = findEdge(v, w).isDefined
+  //
 }
