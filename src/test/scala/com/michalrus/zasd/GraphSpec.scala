@@ -51,12 +51,12 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
       }
 
       "report correct vertex count after adding and removing some vertices" in check {
-        def addRem(howMany: Int) = for {
+        def addRem = for {
           add ← vertices
           rem ← Gen.someOf(add)
         } yield (add, rem)
 
-        forAll(addRem(1000)) {
+        forAll(addRem) {
           case (add, rem) ⇒
             val g = graph
             add foreach g.addVertex
@@ -87,6 +87,21 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
           val g = graph
           edges foreach { case ((v, w), weight) ⇒ g.addEdge(v, w, weight) }
           g.edgeCount === edges.size
+        }
+      }
+
+      "report correct edge count after adding and removing some edges" in check {
+        def addRem = for {
+          add ← edges
+          rem ← Gen.someOf(add.keySet)
+        } yield (add, rem)
+
+        forAll(addRem) {
+          case (add, rem) ⇒
+            val g = graph
+            add foreach { case ((v, w), weight) ⇒ g.addEdge(v, w, weight) }
+            rem foreach { case (v, w) ⇒ g.removeEdge(v, w) }
+            g.edgeCount === add.size - rem.size
         }
       }
 
