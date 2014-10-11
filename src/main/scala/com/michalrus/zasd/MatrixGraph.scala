@@ -12,19 +12,20 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
       if (v < active.size) {
         // recreate → make sure there are no leftovers…
         active(v) = true
-        for (w <- 0 until active.size) {
+        for (w ← 0 until active.size) {
           weights(v)(w) = None
           weights(w)(v) = None
         }
-      } else {
+      }
+      else {
         // resize buffers
-        for (i <- 0 until active.size) {
+        for (i ← 0 until active.size) {
           weights(i).sizeHint(v)
           weights(i) ++= ArrayBuffer.fill(v + 1 - active.size)(Option.empty[EdgeWeight])
         }
         weights.sizeHint(v)
         active.sizeHint(v)
-        for (i <- active.size to v) {
+        for (i ← active.size to v) {
           active += false
           weights += ArrayBuffer.fill(v + 1)(Option.empty[EdgeWeight])
         }
@@ -38,9 +39,9 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
   def edgesInto(v: Int): Set[HalfEdge] = {
     if (contains(v))
       (for {
-        w <- 0 until active.size
+        w ← 0 until active.size
         if contains(w)
-        weight <- weights(w)(v)
+        weight ← weights(w)(v)
       } yield HalfEdge(w, weight)).toSet
     else Set.empty
   }
@@ -48,9 +49,9 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
   def edgesOutOf(v: Int): Set[HalfEdge] = {
     if (contains(v))
       (for {
-        w <- 0 until active.size
+        w ← 0 until active.size
         if contains(w)
-        weight <- weights(v)(w)
+        weight ← weights(v)(w)
       } yield HalfEdge(w, weight)).toSet
     else Set.empty
   }
@@ -67,7 +68,7 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
     if (contains(v)) {
       active(v) = false
       for {
-        w <- 0 until active.size
+        w ← 0 until active.size
         if contains(w)
       } {
         weights(w)(v) = None
