@@ -3,7 +3,7 @@ package com.michalrus.zasd
 import org.scalacheck.Prop.{forAll, BooleanOperators}
 import org.scalacheck.Gen
 
-abstract class GraphSpec(gen: => Graph[Int, Int]) extends UnitSpec {
+abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight]) extends UnitSpec {
 
   "A graph" when {
 
@@ -28,16 +28,16 @@ abstract class GraphSpec(gen: => Graph[Int, Int]) extends UnitSpec {
           set <- Gen.containerOfN[Set, Int](count, Gen.choose(0, sz))
         } yield set)
 
-      def edges(weights: Gen[Int]): Gen[Map[(Int, Int), Int]] =
+      def edges: Gen[Map[(Int, Int), Weight]] =
         for {
           vs <- vertices
-          es <- Gen.mapOf[(Int, Int), Int](for {
+          es <- Gen.mapOf[(Int, Int), Weight](for {
             v <- Gen.oneOf(vs.toSeq)
             w <- Gen.oneOf(vs.toSeq)
             weight <- weights } yield ((v, w), weight))
         } yield es
 
-      "report correct vertex count after adding some verices" in check {
+      "report correct vertex count after adding some vertices" in check {
         forAll(vertices) { vs =>
           val g = gen
           vs foreach g.addVertex
@@ -68,21 +68,22 @@ abstract class GraphSpec(gen: => Graph[Int, Int]) extends UnitSpec {
       }
 
       "autocreate non-existent vertices of newly added edges" in check {
-        forAll(edges(Gen.choose(-100, 100))) { edges =>
+        forAll(edges) { edges =>
           val g = gen
-          edges foreach { case ((v, w), wei) => g.addEdge(v, w, wei) }
+          edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight) }
           val addedVs = edges.keySet flatMap { case (v, w) => Set(v, w) }
           g.vertexCount === addedVs.size
         }
       }
 
       "report correct edge count after adding some edges" in check {
-        forAll(edges(Gen.choose(-100, 100))) { edges =>
+        forAll(edges) { edges =>
           val g = gen
           edges foreach { case ((v, w), weight) => g.addEdge(v, w, weight) }
           g.edgeCount === edges.size
         }
       }
+
     }
 
   }
