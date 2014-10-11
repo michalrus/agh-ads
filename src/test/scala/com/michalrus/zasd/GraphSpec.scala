@@ -45,7 +45,7 @@ abstract class GraphSpec[Weight](gen: => Graph[Int, Weight], weights: Gen[Weight
         }
       }
 
-      "report correct vertex cound after adding and removing some vertices" in check {
+      "report correct vertex count after adding and removing some vertices" in check {
         def addRem(howMany: Int) = for {
           add <- vertices
           rem <- Gen.someOf(add)
