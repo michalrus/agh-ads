@@ -132,7 +132,7 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
         forAll(edges) { edges ⇒
           val g = graph
           edges foreach { case ((v, w), weight) ⇒ g.addEdge(v, w, weight) }
-          val grouped = edges groupBy { case ((v, _), _) ⇒ v } mapValues (_.map { case ((_, w), weight) ⇒ g.HalfEdge(w, weight) }.toSet)
+          val grouped = edges groupBy { case ((v, _), _) ⇒ v } mapValues (_.map { case ((_, w), weight) ⇒ w → weight }.toMap)
           grouped forall { case (v, he) ⇒ g.edgesOutOf(v) == he }
         }
       }
@@ -141,7 +141,7 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
         forAll(edges) { edges ⇒
           val g = graph
           edges foreach { case ((v, w), weight) ⇒ g.addEdge(v, w, weight) }
-          val grouped = edges groupBy { case ((_, w), _) ⇒ w } mapValues (_.map { case ((v, _), weight) ⇒ g.HalfEdge(v, weight) }.toSet)
+          val grouped = edges groupBy { case ((_, w), _) ⇒ w } mapValues (_.map { case ((v, _), weight) ⇒ v → weight }.toMap)
           grouped forall { case (w, he) ⇒ g.edgesInto(w) == he }
         }
       }

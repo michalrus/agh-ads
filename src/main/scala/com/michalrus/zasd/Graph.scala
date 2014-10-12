@@ -2,8 +2,6 @@ package com.michalrus.zasd
 
 trait Graph[Vertex, EdgeWeight] {
 
-  case class HalfEdge(v: Vertex, weight: EdgeWeight)
-
   def addVertex(v: Vertex)
 
   def removeVertex(v: Vertex)
@@ -18,9 +16,9 @@ trait Graph[Vertex, EdgeWeight] {
   //     final def neighbors(v: Vertex) = edgesInto(v) ++ edgesOutOf(v)
   //
 
-  def edgesInto(v: Vertex): Set[HalfEdge]
+  def edgesInto(v: Vertex): Map[Vertex, EdgeWeight]
 
-  def edgesOutOf(v: Vertex): Set[HalfEdge]
+  def edgesOutOf(v: Vertex): Map[Vertex, EdgeWeight]
 
   def contains(v: Vertex): Boolean
 

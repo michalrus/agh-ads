@@ -36,24 +36,24 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
 
   def edgeCount: Int = weights.map(_ count (_.isDefined)).sum
 
-  def edgesInto(v: Int): Set[HalfEdge] = {
+  def edgesInto(v: Int): Map[Int, EdgeWeight] = {
     if (contains(v))
       (for {
         w ← 0 until active.size
         if contains(w)
         weight ← weights(w)(v)
-      } yield HalfEdge(w, weight)).toSet
-    else Set.empty
+      } yield w → weight).toMap
+    else Map.empty
   }
 
-  def edgesOutOf(v: Int): Set[HalfEdge] = {
+  def edgesOutOf(v: Int): Map[Int, EdgeWeight] = {
     if (contains(v))
       (for {
         w ← 0 until active.size
         if contains(w)
         weight ← weights(v)(w)
-      } yield HalfEdge(w, weight)).toSet
-    else Set.empty
+      } yield w → weight).toMap
+    else Map.empty
   }
 
   def addEdge(v: Int, w: Int, weight: EdgeWeight): Unit = {

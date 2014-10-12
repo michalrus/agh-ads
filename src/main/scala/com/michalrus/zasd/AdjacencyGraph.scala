@@ -27,20 +27,19 @@ final class AdjacencyGraph[Vertex, EdgeWeight] extends Graph[Vertex, EdgeWeight]
     adjacency get v foreach (_ -= w)
   }
 
-  def edgesInto(u: Vertex): Set[HalfEdge] = {
+  def edgesInto(u: Vertex): Map[Vertex, EdgeWeight] = {
     (for {
       (v, adj) ← adjacency
       (w, weight) ← adj
       if w == u
-    } yield HalfEdge(v, weight)).toSet
+    } yield v → weight).toMap
   }
 
-  def edgesOutOf(v: Vertex): Set[HalfEdge] = {
-    val map = (adjacency get v).toSet
-    for {
-      adj ← map
+  def edgesOutOf(v: Vertex): Map[Vertex, EdgeWeight] = {
+    (for {
+      adj ← (adjacency get v).toIterable
       (w, weight) ← adj
-    } yield HalfEdge(w, weight)
+    } yield w → weight).toMap
   }
 
   def contains(v: Vertex): Boolean = adjacency.contains(v)
