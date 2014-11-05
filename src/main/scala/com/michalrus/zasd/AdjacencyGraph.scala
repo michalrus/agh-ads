@@ -55,4 +55,6 @@ final class AdjacencyGraph[Vertex, EdgeWeight] extends Graph[Vertex, EdgeWeight]
 
   def edgeCount: Int = adjacency.values.map(_.size).sum
 
+  def vertices: Set[Vertex] = adjacency.keySet.toSet
+
 }

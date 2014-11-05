@@ -87,4 +87,6 @@ final class MatrixGraph[EdgeWeight] extends Graph[Int, EdgeWeight] {
   def removeEdge(v: Int, w: Int): Unit =
     if (contains(v) && contains(w)) weights(v)(w) = None
 
+  def vertices: Set[Int] = (active.zipWithIndex filter (_._1) map (_._2)).toSet
+
 }

@@ -39,4 +39,7 @@ trait Graph[Vertex, EdgeWeight] {
   //
   //     final def areAdjacent(v: Vertex, w: Vertex) = findEdge(v, w).isDefined
   //
+
+  def vertices: Set[Vertex]
+
 }

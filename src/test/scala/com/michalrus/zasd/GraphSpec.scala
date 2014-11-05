@@ -44,6 +44,7 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
       "contain no edges" in check { (v: Vertex, w: Vertex) ⇒ !graph.findEdge(v, w).isDefined }
       "report zero vertex count" in { graph.vertexCount shouldBe 0 }
       "report zero edge count" in { graph.edgeCount shouldBe 0 }
+      "return empty set of vertices" in { graph.vertices shouldBe 'empty }
     }
 
     "non-empty" should {
@@ -193,6 +194,21 @@ abstract class GraphSpec[Vertex, EdgeWeight](graph: ⇒ Graph[Vertex, EdgeWeight
             (cur forall { case ((v, w), weight) ⇒ g.findEdge(v, w) == Some(weight) }) &&
               (rem forall { case (v, w) ⇒ g.findEdge(v, w) == None }) &&
               (notIn forall { case (v, w) ⇒ g.findEdge(v, w) == None })
+        }
+      }
+
+      "return correct set of vertices after adding and removing some vertices" in check {
+        val gen = for {
+          add ← vertices
+          rem ← Gen.someOf(add)
+        } yield (add, rem)
+
+        forAll(gen) {
+          case (add, rem) ⇒
+            val g = graph
+            add foreach g.addVertex
+            rem foreach g.removeVertex
+            g.vertices === (add -- rem)
         }
       }
 
