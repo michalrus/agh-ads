@@ -2,7 +2,6 @@ package com.michalrus.zasd.lab2
 
 import com.michalrus.zasd._
 import org.scalatest.concurrent.Timeouts
-import org.scalatest.exceptions.TestFailedDueToTimeoutException
 import org.scalatest.time.{ Seconds, Span }
 
 import scala.io.Source
@@ -17,35 +16,31 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
     "succeed in populating an AdjacencyGraph" in { populate(new AdjacencyGraph[Int, Int]) }
   }
 
-  def timeout[T](tmout: Long, v: (WarshalFloyd.type, Graph[Int, Int]) ⇒ T, g: String, gen: ⇒ Graph[Int, Int]) = {
-    s"take more than $tmout seconds on a(n) $g" ignore {
-      val _ = intercept[TestFailedDueToTimeoutException] {
+  def variant[T](vname: String, v: (WarshalFloyd.type, Graph[Int, Int]) ⇒ T, tmout: Long, ignored: Boolean): Unit = {
+    def forGraph(gname: String, gen: ⇒ Graph[Int, Int]) {
+      lazy val body: Unit = {
         val g = gen
         populate(g)
+        val start = System.nanoTime
         failAfter(Span(tmout, Seconds)) {
           v(WarshalFloyd, g)
         }
+        val stop = System.nanoTime
+        info(s"time = ${(stop - start) / 1e9} s")
       }
+      val msg = s"take less than $tmout s for $gname"
+      if (ignored) msg ignore body else msg in body
+    }
+
+    s"using `$vname` variant" should {
+      forGraph("a MatrixGraph", new MatrixGraph[Int])
+      forGraph("an AdjacencyGraph", new AdjacencyGraph[Int, Int])
     }
   }
 
   "WarshalFloyd" when {
-    "using `mutableMap` variant" should {
-      timeout(60, _ mutableMap _, "MatrixGraph", new MatrixGraph[Int])
-      timeout(60, _ mutableMap _, "AdjacencyGraph", new AdjacencyGraph[Int, Int])
-    }
-    "using `mutableArray` variant" should {
-      "work" in {
-        val g = new MatrixGraph[Int]
-        populate(g)
-        val a = System.nanoTime
-        failAfter(Span(30, Seconds)) {
-          WarshalFloyd.mutableArray(g)
-        }
-        val b = System.nanoTime
-        info(s"time = ${(b - a) / 1e9} s")
-      }
-    }
+    variant("mutableMap", _ mutableMap _, 600, ignored = true)
+    variant("mutableArray", _ mutableArray _, 30, ignored = false)
   }
 
 }
