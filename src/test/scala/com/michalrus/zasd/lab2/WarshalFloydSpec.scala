@@ -11,22 +11,27 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
   def populate(g: Graph[Int, Int]): Unit =
     GraphParser.addFromString(g, Source.fromURL(getClass.getResource("graph.txt")).mkString)
 
+  def timed[F](label: String)(b: ⇒ F): F = {
+    val start = System.nanoTime
+    val f = b
+    val stop = System.nanoTime
+    info(s"t_$label = ${(stop - start) / 1e9} s")
+    f
+  }
+
   "GraphParser" should {
-    "succeed in populating a MatrixGraph" in { populate(new MatrixGraph[Int]) }
-    "succeed in populating an AdjacencyGraph" in { populate(new AdjacencyGraph[Int, Int]) }
+    "succeed in populating a MatrixGraph" in timed("populate") { populate(new MatrixGraph[Int]) }
+    "succeed in populating an AdjacencyGraph" in timed("populate") { populate(new AdjacencyGraph[Int, Int]) }
   }
 
   def variant[T](vname: String, v: (WarshalFloyd.type, Graph[Int, Int]) ⇒ T, tmout: Long, ignored: Boolean): Unit = {
     def forGraph(gname: String, gen: ⇒ Graph[Int, Int]) {
       lazy val body: Unit = {
         val g = gen
-        populate(g)
-        val start = System.nanoTime
-        failAfter(Span(tmout, Seconds)) {
-          v(WarshalFloyd, g)
+        timed("populate") { populate(g) }
+        val _ = failAfter(Span(tmout, Seconds)) {
+          timed("run") { v(WarshalFloyd, g) }
         }
-        val stop = System.nanoTime
-        info(s"time = ${(stop - start) / 1e9} s")
       }
       val msg = s"take less than $tmout s for $gname"
       if (ignored) msg ignore body else msg in body
@@ -40,7 +45,8 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
 
   "WarshalFloyd" when {
     variant("mutableMap", _ mutableMap _, 600, ignored = true)
-    variant("mutableArray", _ mutableArray _, 30, ignored = false)
+    variant("mutableArray", _ mutableArray _, 30, ignored = true)
+    variant("rawArray", _ rawArray _, 10, ignored = false)
   }
 
 }

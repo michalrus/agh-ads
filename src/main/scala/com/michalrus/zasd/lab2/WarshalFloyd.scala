@@ -8,7 +8,7 @@ object WarshalFloyd {
     import collection.mutable
     val vs = graph.vertices
 
-    val dPoprzednik: mutable.HashMap[(Vertex, Vertex), (Int, Option[Vertex])] = (for { // FIXME: naming
+    val d_predecessor: mutable.HashMap[(Vertex, Vertex), (Int, Option[Vertex])] = (for { // FIXME: naming
       v1 ← vs
       v2 ← vs
     } yield (v1, v2) → {
@@ -21,14 +21,14 @@ object WarshalFloyd {
       v1 ← vs
       v2 ← vs
     } {
-      val uv2 = dPoprzednik((u, v2))
-      val candidate = dPoprzednik((v1, u))._1 + uv2._1
-      if (dPoprzednik((v1, v2))._1 > candidate)
-        dPoprzednik((v1, v2)) = (candidate, uv2._2)
+      val uv2 = d_predecessor((u, v2))
+      val candidate = d_predecessor((v1, u))._1 + uv2._1
+      if (d_predecessor((v1, v2))._1 > candidate)
+        d_predecessor((v1, v2)) = (candidate, uv2._2)
       Thread.sleep(0)
     }
 
-    dPoprzednik.toMap
+    d_predecessor.toMap
   }
 
   def mutableArray(graph: Graph[Int, Int]): Array[Array[(Int, Int)]] = {
@@ -53,6 +53,55 @@ object WarshalFloyd {
     }
 
     res
+  }
+
+  def rawArray(graph: Graph[Int, Int]): (Array[Array[Int]], Array[Array[Int]]) = {
+    val N = graph.vertices.max + 1
+    val d = Array.ofDim[Int](N, N)
+    val predecessor = Array.ofDim[Int](N, N)
+
+    var v1, v2, u = 0
+    var e = Option.empty[Int]
+
+    v1 = 0
+    while (v1 < N) {
+      v2 = 0
+      while (v2 < N) {
+        e = graph.findEdge(v1, v2)
+        if (e.isEmpty) {
+          d(v1)(v2) = Int.MaxValue
+          predecessor(v1)(v2) = -1
+        }
+        else {
+          d(v1)(v2) = e.get
+          predecessor(v1)(v2) = v1
+        }
+        v2 += 1
+      }
+      d(v1)(v1) = 0
+      v1 += 1
+    }
+
+    var sum = 0
+    u = 0
+    while (u < N) {
+      v1 = 0
+      while (v1 < N) {
+        v2 = 0
+        while (v2 < N) {
+          sum = d(v1)(u) + d(u)(v2)
+          if (d(v1)(v2) > sum) {
+            d(v1)(v2) = sum
+            predecessor(v1)(v2) = predecessor(u)(v2)
+          }
+          v2 += 1
+        }
+        v1 += 1
+      }
+      u += 1
+    }
+
+    (d, predecessor)
   }
 
 }
