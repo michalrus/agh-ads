@@ -34,6 +34,18 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
       timeout(60, _ mutableMap _, "MatrixGraph", new MatrixGraph[Int])
       timeout(60, _ mutableMap _, "AdjacencyGraph", new AdjacencyGraph[Int, Int])
     }
+    "using `mutableArray` variant" should {
+      "work" in {
+        val g = new MatrixGraph[Int]
+        populate(g)
+        val a = System.nanoTime
+        failAfter(Span(30, Seconds)) {
+          WarshalFloyd.mutableArray(g)
+        }
+        val b = System.nanoTime
+        info(s"time = ${(b - a) / 1e9} s")
+      }
+    }
   }
 
 }
