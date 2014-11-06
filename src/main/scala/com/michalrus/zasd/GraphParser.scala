@@ -4,7 +4,7 @@ object GraphParser {
 
   def addFromString(graph: Graph[Int, Int], input: String): Unit = {
     def parseLine(l: String): (Int, Int, Int) = {
-      l.split(", ".toCharArray).toList filterNot (_.isEmpty) map (_.toInt) match {
+      l.split(",; ".toCharArray).toList filterNot (_.isEmpty) map (_.toInt) match {
         case List(v, w, weight) ⇒ (v, w, weight)
       }
     }
