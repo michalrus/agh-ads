@@ -6,7 +6,7 @@ import org.scalatest.time.{ Seconds, Span }
 
 import scala.io.Source
 
-class WarshalFloydSpec extends UnitSpec with Timeouts {
+class WarshallFloydSpec extends UnitSpec with Timeouts {
 
   def populate(g: Graph[Int, Int]): Unit =
     GraphParser.addFromString(g, Source.fromURL(getClass.getResource("graph.txt")).mkString)
@@ -24,13 +24,13 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
     "succeed in populating an AdjacencyGraph" in timed("populate") { populate(new AdjacencyGraph[Int, Int]) }
   }
 
-  def variant(v1: Int, v2: Int, vname: String, v: (WarshalFloyd.type, Graph[Int, Int]) ⇒ WarshalFloyd.Result[Int], tmout: Long, ignored: Boolean): Unit = {
+  def variant(v1: Int, v2: Int, vname: String, v: (WarshallFloyd.type, Graph[Int, Int]) ⇒ WarshallFloyd.Result[Int], tmout: Long, ignored: Boolean): Unit = {
     def forGraph(gname: String, gen: ⇒ Graph[Int, Int]) {
       lazy val body: Unit = {
         val g = gen
         timed("populate") { populate(g) }
         val result = failAfter(Span(tmout, Seconds)) {
-          timed("run") { v(WarshalFloyd, g) }
+          timed("run") { v(WarshallFloyd, g) }
         }
         info(s"distance($v1, $v2) = ${result.distance(v1, v2)}")
         info(s"shortestPath($v1, $v2) = ${result.shortestPath(v1, v2)}")
@@ -45,7 +45,7 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
     }
   }
 
-  "WarshalFloyd" when {
+  "WarshallFloyd" when {
     variant(109, 609, "mutableMap", _ mutableMap _, 600, ignored = true)
     variant(109, 609, "mutableArray", _ mutableArray _, 30, ignored = true)
     variant(109, 609, "rawArray", _ rawArray _, 10, ignored = false)

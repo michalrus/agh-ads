@@ -2,7 +2,7 @@ package com.michalrus.zasd.lab2
 
 import com.michalrus.zasd.Graph
 
-object WarshalFloyd {
+object WarshallFloyd {
 
   trait Result[Vertex] {
     def distance(from: Vertex, to: Vertex): Int
