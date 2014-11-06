@@ -4,7 +4,13 @@ import com.michalrus.zasd.Graph
 
 object WarshalFloyd {
 
-  def mutableMap[Vertex](graph: Graph[Vertex, Int]): Map[(Vertex, Vertex), (Int, Option[Vertex])] = {
+  trait Result[Vertex] {
+    def distance(from: Vertex, to: Vertex): Int
+    def predecessor(from: Vertex, to: Vertex): Option[Vertex]
+    final def shortestPath(from: Vertex, to: Vertex): List[Vertex] = ???
+  }
+
+  def mutableMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex] = {
     import collection.mutable
     val vs = graph.vertices
 
@@ -28,10 +34,13 @@ object WarshalFloyd {
       Thread.sleep(0)
     }
 
-    d_predecessor.toMap
+    new Result[Vertex] {
+      def distance(from: Vertex, to: Vertex): Int = d_predecessor get ((from, to)) map (_._1) getOrElse Int.MaxValue
+      def predecessor(from: Vertex, to: Vertex): Option[Vertex] = d_predecessor get ((from, to)) flatMap (_._2)
+    }
   }
 
-  def mutableArray(graph: Graph[Int, Int]): Array[Array[(Int, Int)]] = {
+  def mutableArray(graph: Graph[Int, Int]): Result[Int] = {
     val vs = graph.vertices
     val N = vs.max + 1
     val res = Array.ofDim[(Int, Int)](N, N)
@@ -52,13 +61,16 @@ object WarshalFloyd {
         res(v1)(v2) = (sum, res(u)(v2)._2)
     }
 
-    res
+    new Result[Int] {
+      def distance(from: Int, to: Int): Int = res(from)(to)._1
+      def predecessor(from: Int, to: Int): Option[Int] = Some(res(from)(to)._2) filter (_ != -1)
+    }
   }
 
-  def rawArray(graph: Graph[Int, Int]): (Array[Array[Int]], Array[Array[Int]]) = {
+  def rawArray(graph: Graph[Int, Int]): Result[Int] = {
     val N = graph.vertices.max
     val d = Array.ofDim[Int](N + 1, N + 1)
-    val predecessor = Array.ofDim[Int](N + 1, N + 1)
+    val predec = Array.ofDim[Int](N + 1, N + 1)
 
     import annotation.tailrec
 
@@ -67,11 +79,11 @@ object WarshalFloyd {
         val e = graph.findEdge(v1, v2)
         if (e.isEmpty) {
           d(v1)(v2) = Int.MaxValue
-          predecessor(v1)(v2) = -1
+          predec(v1)(v2) = -1
         }
         else {
           d(v1)(v2) = e.get
-          predecessor(v1)(v2) = v1
+          predec(v1)(v2) = v1
         }
         if (v2 < N) loop2(v2 + 1)
       }
@@ -86,7 +98,7 @@ object WarshalFloyd {
           val sum = d(v1)(u) + d(u)(v2)
           if (d(v1)(v2) > sum) {
             d(v1)(v2) = sum
-            predecessor(v1)(v2) = predecessor(u)(v2)
+            predec(v1)(v2) = predec(u)(v2)
           }
           if (v2 < N) loop3(v2 + 1)
         }
@@ -98,7 +110,10 @@ object WarshalFloyd {
     }
     loop1(0)
 
-    (d, predecessor)
+    new Result[Int] {
+      def distance(from: Int, to: Int): Int = d(from)(to)
+      def predecessor(from: Int, to: Int): Option[Int] = Some(predec(from)(to)) filter (_ != -1)
+    }
   }
 
 }
