@@ -17,15 +17,22 @@ class WarshalFloydSpec extends UnitSpec with Timeouts {
     "succeed in populating an AdjacencyGraph" in { populate(new AdjacencyGraph[Int, Int]) }
   }
 
-  "WarshalFloyd" when {
-    "using `mutableMap` variant" should {
-      "take more than 120 seconds on MatrixGraph" in intercept[TestFailedDueToTimeoutException] {
-        val g = new MatrixGraph[Int]
+  def timeout[T](tmout: Long, v: (WarshalFloyd.type, Graph[Int, Int]) ⇒ T, g: String, gen: ⇒ Graph[Int, Int]) = {
+    s"take more than $tmout seconds on a(n) $g" ignore {
+      val _ = intercept[TestFailedDueToTimeoutException] {
+        val g = gen
         populate(g)
-        failAfter(Span(120, Seconds)) {
-          WarshalFloyd.mutableMap(g)
+        failAfter(Span(tmout, Seconds)) {
+          v(WarshalFloyd, g)
         }
       }
+    }
+  }
+
+  "WarshalFloyd" when {
+    "using `mutableMap` variant" should {
+      timeout(60, _ mutableMap _, "MatrixGraph", new MatrixGraph[Int])
+      timeout(60, _ mutableMap _, "AdjacencyGraph", new AdjacencyGraph[Int, Int])
     }
   }
 
