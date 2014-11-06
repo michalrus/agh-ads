@@ -9,12 +9,12 @@ object WarshallFloyd {
     def predecessor(from: Vertex, to: Vertex): Option[Vertex]
     final def shortestPath(from: Vertex, to: Vertex): List[Vertex] = {
       def rpath(last: Vertex): Stream[Vertex] =
-        if (last == to) Stream.empty
+        if (last == from) Stream.empty
         else predecessor(from, last) match {
           case None    ⇒ Stream.empty
           case Some(p) ⇒ p #:: rpath(p)
         }
-      rpath(to).toList.reverse
+      (to :: rpath(to).toList).reverse
     }
   }
 
@@ -36,9 +36,9 @@ object WarshallFloyd {
       v2 ← vs
     } {
       val uv2 = d_predecessor((u, v2))
-      val candidate = d_predecessor((v1, u))._1 + uv2._1
+      val candidate = d_predecessor((v1, u))._1.toLong + uv2._1.toLong
       if (d_predecessor((v1, v2))._1 > candidate)
-        d_predecessor((v1, v2)) = (candidate, uv2._2)
+        d_predecessor((v1, v2)) = (candidate.toInt, uv2._2)
       Thread.sleep(0)
     }
 
@@ -64,9 +64,9 @@ object WarshallFloyd {
     }
 
     for (u ← vs; v1 ← vs; v2 ← vs) {
-      val sum = res(v1)(u)._1 + res(u)(v2)._1
+      val sum = res(v1)(u)._1.toLong + res(u)(v2)._1.toLong
       if (res(v1)(v2)._1 > sum)
-        res(v1)(v2) = (sum, res(u)(v2)._2)
+        res(v1)(v2) = (sum.toInt, res(u)(v2)._2)
     }
 
     new Result[Int] {
@@ -103,9 +103,9 @@ object WarshallFloyd {
     @tailrec def loop1(u: Int): Unit = {
       @tailrec def loop2(v1: Int): Unit = {
         @tailrec def loop3(v2: Int): Unit = {
-          val sum = d(v1)(u) + d(u)(v2)
+          val sum = d(v1)(u).toLong + d(u)(v2).toLong
           if (d(v1)(v2) > sum) {
-            d(v1)(v2) = sum
+            d(v1)(v2) = sum.toInt
             predec(v1)(v2) = predec(u)(v2)
           }
           if (v2 < N) loop3(v2 + 1)
