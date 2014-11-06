@@ -24,7 +24,7 @@ class WarshallFloydSpec extends UnitSpec with Timeouts {
     "succeed in populating an AdjacencyGraph" in timed("populate") { populate(new AdjacencyGraph[Int, Int]) }
   }
 
-  def variant(v1: Int, v2: Int, vname: String, v: (WarshallFloyd.type, Graph[Int, Int]) ⇒ WarshallFloyd.Result[Int], tmout: Long, ignored: Boolean): Unit = {
+  def variant(v1: Int, v2: Int, expDistance: Int, expPath: List[Int], vname: String, v: (WarshallFloyd.type, Graph[Int, Int]) ⇒ WarshallFloyd.Result[Int], tmout: Long, ignored: Boolean): Unit = {
     def forGraph(gname: String, gen: ⇒ Graph[Int, Int]) {
       lazy val body: Unit = {
         val g = gen
@@ -34,8 +34,10 @@ class WarshallFloydSpec extends UnitSpec with Timeouts {
         }
         info(s"distance($v1, $v2) = ${result.distance(v1, v2)}")
         info(s"shortestPath($v1, $v2) = ${result.shortestPath(v1, v2)}")
+        result.distance(v1, v2) shouldBe expDistance
+        result.shortestPath(v1, v2) shouldBe expPath
       }
-      val msg = s"take less than $tmout s for $gname"
+      val msg = s"take less than $tmout s for $gname and be correct"
       if (ignored) msg ignore body else msg in body
     }
 
@@ -46,9 +48,13 @@ class WarshallFloydSpec extends UnitSpec with Timeouts {
   }
 
   "WarshallFloyd" when {
-    variant(109, 609, "mutableMap", _ mutableMap _, 600, ignored = true)
-    variant(109, 609, "mutableArray", _ mutableArray _, 30, ignored = true)
-    variant(109, 609, "rawArray", _ rawArray _, 10, ignored = false)
+    val v1 = 109
+    val v2 = 609
+    val d = 18
+    val p = List(109, 713, 870, 614, 808, 609)
+    variant(v1, v2, d, p, "mutableMap", _ mutableMap _, 600, ignored = true)
+    variant(v1, v2, d, p, "mutableArray", _ mutableArray _, 30, ignored = true)
+    variant(v1, v2, d, p, "rawArray", _ rawArray _, 10, ignored = false)
   }
 
 }
