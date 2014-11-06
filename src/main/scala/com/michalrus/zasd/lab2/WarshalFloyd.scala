@@ -56,18 +56,15 @@ object WarshalFloyd {
   }
 
   def rawArray(graph: Graph[Int, Int]): (Array[Array[Int]], Array[Array[Int]]) = {
-    val N = graph.vertices.max + 1
-    val d = Array.ofDim[Int](N, N)
-    val predecessor = Array.ofDim[Int](N, N)
+    val N = graph.vertices.max
+    val d = Array.ofDim[Int](N + 1, N + 1)
+    val predecessor = Array.ofDim[Int](N + 1, N + 1)
 
-    var v1, v2, u = 0
-    var e = Option.empty[Int]
+    import annotation.tailrec
 
-    v1 = 0
-    while (v1 < N) {
-      v2 = 0
-      while (v2 < N) {
-        e = graph.findEdge(v1, v2)
+    @tailrec def init(v1: Int): Unit = {
+      @tailrec def loop2(v2: Int): Unit = {
+        val e = graph.findEdge(v1, v2)
         if (e.isEmpty) {
           d(v1)(v2) = Int.MaxValue
           predecessor(v1)(v2) = -1
@@ -76,30 +73,30 @@ object WarshalFloyd {
           d(v1)(v2) = e.get
           predecessor(v1)(v2) = v1
         }
-        v2 += 1
+        if (v2 < N) loop2(v2 + 1)
       }
-      d(v1)(v1) = 0
-      v1 += 1
+      loop2(0)
+      if (v1 < N) init(v1 + 1)
     }
+    init(0)
 
-    var sum = 0
-    u = 0
-    while (u < N) {
-      v1 = 0
-      while (v1 < N) {
-        v2 = 0
-        while (v2 < N) {
-          sum = d(v1)(u) + d(u)(v2)
+    @tailrec def loop1(u: Int): Unit = {
+      @tailrec def loop2(v1: Int): Unit = {
+        @tailrec def loop3(v2: Int): Unit = {
+          val sum = d(v1)(u) + d(u)(v2)
           if (d(v1)(v2) > sum) {
             d(v1)(v2) = sum
             predecessor(v1)(v2) = predecessor(u)(v2)
           }
-          v2 += 1
+          if (v2 < N) loop3(v2 + 1)
         }
-        v1 += 1
+        loop3(0)
+        if (v1 < N) loop2(v1 + 1)
       }
-      u += 1
+      loop2(0)
+      if (u < N) loop1(u + 1)
     }
+    loop1(0)
 
     (d, predecessor)
   }
