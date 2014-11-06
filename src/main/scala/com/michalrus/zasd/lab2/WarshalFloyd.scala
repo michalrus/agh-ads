@@ -7,7 +7,15 @@ object WarshalFloyd {
   trait Result[Vertex] {
     def distance(from: Vertex, to: Vertex): Int
     def predecessor(from: Vertex, to: Vertex): Option[Vertex]
-    final def shortestPath(from: Vertex, to: Vertex): List[Vertex] = ???
+    final def shortestPath(from: Vertex, to: Vertex): List[Vertex] = {
+      def rpath(last: Vertex): Stream[Vertex] =
+        if (last == to) Stream.empty
+        else predecessor(from, last) match {
+          case None    ⇒ Stream.empty
+          case Some(p) ⇒ p #:: rpath(p)
+        }
+      rpath(to).toList.reverse
+    }
   }
 
   def mutableMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex] = {
