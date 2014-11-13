@@ -18,7 +18,7 @@ object WarshallFloyd {
     }
   }
 
-  def mutableMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex] = {
+  def mutableHashMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex] = {
     import collection.mutable
     val vs = graph.vertices
 
@@ -48,7 +48,7 @@ object WarshallFloyd {
     }
   }
 
-  def mutableArray(graph: Graph[Int, Int]): Result[Int] = {
+  def arrayForComprehension(graph: Graph[Int, Int]): Result[Int] = {
     val vs = graph.vertices
     val N = vs.max + 1
     val res = Array.ofDim[(Int, Int)](N, N)
@@ -75,7 +75,7 @@ object WarshallFloyd {
     }
   }
 
-  def rawArray(graph: Graph[Int, Int]): Result[Int] = {
+  def arrayTailRec(graph: Graph[Int, Int]): Result[Int] = {
     val N = graph.vertices.max
     val d = Array.ofDim[Int](N + 1, N + 1)
     val predec = Array.ofDim[Int](N + 1, N + 1)
@@ -124,7 +124,7 @@ object WarshallFloyd {
     }
   }
 
-  def rawRawArray(graph: Graph[Int, Int]): Result[Int] = {
+  def array1DTailRec(graph: Graph[Int, Int]): Result[Int] = {
     val N = graph.vertices.max
     val size = N + 1
     val d = new Array[Int](size * size)
