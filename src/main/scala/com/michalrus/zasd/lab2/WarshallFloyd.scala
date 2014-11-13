@@ -124,4 +124,57 @@ object WarshallFloyd {
     }
   }
 
+  def rawRawArray(graph: Graph[Int, Int]): Result[Int] = {
+    val N = graph.vertices.max
+    val size = N + 1
+    val d = new Array[Int](size * size)
+    val predec = new Array[Int](size * size)
+
+    import annotation.tailrec
+
+    @tailrec def init(v1: Int): Unit = {
+      @tailrec def loop2(v2: Int): Unit = {
+        val e = graph.findEdge(v1, v2)
+        val v1v2 = v1 * size + v2
+        if (e.isEmpty) {
+          d(v1v2) = Int.MaxValue
+          predec(v1v2) = -1
+        }
+        else {
+          d(v1v2) = e.get
+          predec(v1v2) = v1
+        }
+        if (v2 < N) loop2(v2 + 1)
+      }
+      loop2(0)
+      if (v1 < N) init(v1 + 1)
+    }
+    init(0)
+
+    @tailrec def loop1(u: Int): Unit = {
+      @tailrec def loop2(v1: Int): Unit = {
+        @tailrec def loop3(v2: Int): Unit = {
+          val v1v2 = v1 * size + v2
+          val uv2 = u * size + v2
+          val sum = d(v1 * size + u).toLong + d(uv2).toLong
+          if (d(v1v2) > sum) {
+            d(v1v2) = sum.toInt
+            predec(v1v2) = predec(uv2)
+          }
+          if (v2 < N) loop3(v2 + 1)
+        }
+        loop3(0)
+        if (v1 < N) loop2(v1 + 1)
+      }
+      loop2(0)
+      if (u < N) loop1(u + 1)
+    }
+    loop1(0)
+
+    new Result[Int] {
+      def distance(from: Int, to: Int): Int = d(from * size + to)
+      def predecessor(from: Int, to: Int): Option[Int] = Some(predec(from * size + to)) filter (_ != -1)
+    }
+  }
+
 }

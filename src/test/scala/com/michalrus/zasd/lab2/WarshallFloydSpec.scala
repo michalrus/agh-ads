@@ -58,6 +58,7 @@ class WarshallFloydSpec extends UnitSpec with Timeouts {
     variant(v1, v2, d, p, "mutableMap", _ mutableMap _, 600, ignored = true)
     variant(v1, v2, d, p, "mutableArray", _ mutableArray _, 30, ignored = true)
     variant(v1, v2, d, p, "rawArray", _ rawArray _, 10, ignored = false)
+    variant(v1, v2, d, p, "rawRawArray", _ rawRawArray _, 10, ignored = false)
   }
 
   "WarshallFloyd" should {
