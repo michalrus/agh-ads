@@ -4,8 +4,8 @@ import com.michalrus.zasd.Graph
 
 object WarshallFloyd {
 
-  trait Result[Vertex] {
-    def distance(from: Vertex, to: Vertex): Int
+  trait Result[Vertex, EdgeWeight] {
+    def distance(from: Vertex, to: Vertex): EdgeWeight
     def predecessor(from: Vertex, to: Vertex): Option[Vertex]
     final def shortestPath(from: Vertex, to: Vertex): List[Vertex] = {
       def rpath(last: Vertex): Stream[Vertex] =
@@ -18,7 +18,7 @@ object WarshallFloyd {
     }
   }
 
-  def mutableHashMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex] = {
+  def mutableHashMap[Vertex](graph: Graph[Vertex, Int]): Result[Vertex, Int] = {
     import collection.mutable
     val vs = graph.vertices
 
@@ -42,13 +42,13 @@ object WarshallFloyd {
       Thread.sleep(0)
     }
 
-    new Result[Vertex] {
+    new Result[Vertex, Int] {
       def distance(from: Vertex, to: Vertex): Int = d_predecessor get ((from, to)) map (_._1) getOrElse Int.MaxValue
       def predecessor(from: Vertex, to: Vertex): Option[Vertex] = d_predecessor get ((from, to)) flatMap (_._2)
     }
   }
 
-  def arrayForComprehension(graph: Graph[Int, Int]): Result[Int] = {
+  def arrayForComprehension(graph: Graph[Int, Int]): Result[Int, Int] = {
     val vs = graph.vertices
     val N = vs.max + 1
     val res = Array.ofDim[(Int, Int)](N, N)
@@ -75,7 +75,7 @@ object WarshallFloyd {
     }
   }
 
-  def arrayTailRec(graph: Graph[Int, Int]): Result[Int] = {
+  def arrayTailRec(graph: Graph[Int, Int]): Result[Int, Int] = {
     val N = graph.vertices.max
     val d = Array.ofDim[Int](N + 1, N + 1)
     val predec = Array.ofDim[Int](N + 1, N + 1)
@@ -118,13 +118,13 @@ object WarshallFloyd {
     }
     loop1(0)
 
-    new Result[Int] {
+    new Result[Int, Int] {
       def distance(from: Int, to: Int): Int = d(from)(to)
       def predecessor(from: Int, to: Int): Option[Int] = Some(predec(from)(to)) filter (_ != -1)
     }
   }
 
-  def array1DTailRec(graph: Graph[Int, Int]): Result[Int] = {
+  def array1DTailRec(graph: Graph[Int, Int]): Result[Int, Int] = {
     val N = graph.vertices.max
     val size = N + 1
     val d = new Array[Int](size * size)
@@ -171,7 +171,7 @@ object WarshallFloyd {
     }
     loop1(0)
 
-    new Result[Int] {
+    new Result[Int, Int] {
       def distance(from: Int, to: Int): Int = d(from * size + to)
       def predecessor(from: Int, to: Int): Option[Int] = Some(predec(from * size + to)) filter (_ != -1)
     }

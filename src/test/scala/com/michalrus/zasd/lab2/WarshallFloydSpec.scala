@@ -3,8 +3,6 @@ package com.michalrus.zasd.lab2
 import com.michalrus.zasd._
 import org.scalatest.time.{ Seconds, Span }
 
-import scala.io.Source
-
 class WarshallFloydSpec extends UnitSpec {
 
   val populate = populateWith("graph.txt")_
@@ -14,7 +12,7 @@ class WarshallFloydSpec extends UnitSpec {
     "succeed in populating an AdjacencyGraph" in timed("populate") { populate(new AdjacencyGraph[Int, Int]) }
   }
 
-  def variant(numRuns: Int, v1: Int, v2: Int, expDistance: Int, expPath: List[Int], vname: String, v: (WarshallFloyd.type, Graph[Int, Int]) ⇒ WarshallFloyd.Result[Int], tmout: Long, ignored: Boolean): Unit = {
+  def variant(numRuns: Int, v1: Int, v2: Int, expDistance: Int, expPath: List[Int], vname: String, v: (WarshallFloyd.type, Graph[Int, Int]) ⇒ WarshallFloyd.Result[Int, Int], tmout: Long, ignored: Boolean): Unit = {
     def forGraph(gname: String, gen: ⇒ Graph[Int, Int]) {
       lazy val body: Unit = {
         val g = gen
