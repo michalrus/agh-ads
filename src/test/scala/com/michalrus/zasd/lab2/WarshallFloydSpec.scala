@@ -7,19 +7,7 @@ import scala.io.Source
 
 class WarshallFloydSpec extends UnitSpec {
 
-  def populate(g: Graph[Int, Int]): Unit =
-    GraphParser.addFromString(g, Source.fromURL(getClass.getResource("graph.txt")).mkString)
-
-  def timedWithTime[F](label: String, showInfo: Boolean)(b: ⇒ F): (F, Long) = {
-    val start = System.nanoTime
-    val f = b
-    val stop = System.nanoTime
-    val time = stop - start
-    if (showInfo) info(s"t_$label = ${time / 1e9} s")
-    (f, time)
-  }
-
-  def timed[F](label: String)(b: ⇒ F): F = timedWithTime(label, showInfo = true)(b)._1
+  val populate = populateWith("graph.txt")_
 
   "GraphParser" should {
     "succeed in populating a MatrixGraph" in timed("populate") { populate(new MatrixGraph[Int]) }
