@@ -1,12 +1,11 @@
 package com.michalrus.zasd.lab2
 
 import com.michalrus.zasd._
-import org.scalatest.concurrent.{ Interruptor, Timeouts }
 import org.scalatest.time.{ Seconds, Span }
 
 import scala.io.Source
 
-class WarshallFloydSpec extends UnitSpec with Timeouts {
+class WarshallFloydSpec extends UnitSpec {
 
   def populate(g: Graph[Int, Int]): Unit =
     GraphParser.addFromString(g, Source.fromURL(getClass.getResource("graph.txt")).mkString)
