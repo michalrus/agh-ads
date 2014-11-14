@@ -69,7 +69,7 @@ object WarshallFloyd {
         res(v1)(v2) = (sum.toInt, res(u)(v2)._2)
     }
 
-    new Result[Int] {
+    new Result[Int, Int] {
       def distance(from: Int, to: Int): Int = res(from)(to)._1
       def predecessor(from: Int, to: Int): Option[Int] = Some(res(from)(to)._2) filter (_ != -1)
     }
