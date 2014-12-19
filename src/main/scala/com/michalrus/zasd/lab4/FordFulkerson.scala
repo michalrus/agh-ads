@@ -37,11 +37,11 @@ object FordFulkerson {
 
       var r = Vector.empty[Edge]
       if (found) {
-        @tailrec def recAdd(u: Int): Unit = {
-          if (u != source) {
-            val (v, w) = predecessors(u)
+        @tailrec def recAdd(v: Int): Unit = {
+          if (v != source) {
+            val (u, w) = predecessors(v)
             r :+= Edge(u, v, w)
-            recAdd(v)
+            recAdd(u)
           }
         }
         recAdd(sink)
