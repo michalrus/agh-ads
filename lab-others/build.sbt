@@ -2,7 +2,7 @@ organization := "com.michalrus"
 
 name := "zasd"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint",
   "-Xfatal-warnings",
